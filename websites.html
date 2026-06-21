@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Websites</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+</head>
+<body class="websites-page">
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="websites.html">Websites</a>
+            <a href="apps.html">Apps & Mobile</a>
+        </div>
+        <div class="nav-icon">
+            <a href="https://github.com/Bianca-26" class="GitHub-box">
+                <img src="images/GitHub.svg" alt="GitHub">
+            </a>
+        </div>
+    </nav>
+
+    <section class="hero">
+
+         <div class="Waves">
+            <img src="images/lines.svg" alt="lines" class="lines-svg">
+        </div>
+
+        <div class="content-2">
+            <h1>Websites</h1>
+            <div id="lottie-animation"></div>
+        </div>
+
+
+        <div class="content">
+        </div>
+    </section>
+
+    <div id="proiecte-container" class="projects-grid">
+ 
+    </div>
+
+    <script>
+    var animation = lottie.loadAnimation({
+        container: document.getElementById('lottie-animation'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'white arrow motion.json' 
+    });
+</script>
+
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+
+    // 3. Pornim motorul
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Funcție care verifică dacă imaginea -full există. Dacă nu, deschide imaginea normală.
+    function deschideProiect(caleLunga, caleNormala) {
+    // Facem un request rapid în fundal ca să vedem dacă imaginea -full se încarcă (status 200 OK)
+    fetch(caleLunga, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                // Dacă fișierul -full există, îl deschidem într-un tab nou
+                window.open(caleLunga, '_blank');
+            } else {
+                // Dacă dă eroare 404 (nu există), deschidem imaginea de pe card
+                window.open(caleNormala, '_blank');
+            }
+        })
+        .catch(() => {
+            // În caz de orice altă eroare de rețea, deschidem preventiv imaginea normală
+            window.open(caleNormala, '_blank');
+        });
+}
+
+    function afiseazaProiecte() {
+    const container = document.getElementById('proiecte-container');
+
+    db.collection("proiecte").where("categorie", "==", "websites").orderBy("timestamp", "desc").onSnapshot((querySnapshot) => {
+        container.innerHTML = ""; 
+
+        if (querySnapshot.empty) {
+            container.innerHTML = "<p>Baza de date pare goală...</p>";
+            return;
+        }
+
+        querySnapshot.forEach((doc) => {
+            const date = doc.data();
+            
+            // date.figmaLink conține acum direct calea locală introdusă în Admin (ex: "imagini/korea.png")
+            const caleImagine = date.figmaLink; 
+
+            // MODIFICAT ACUM: Detectăm extensia (.png, .jpg etc.) și generăm automat calea cu "-full" pentru buton
+            const extensie = caleImagine.substring(caleImagine.lastIndexOf('.'));
+            const caleImagineLunga = caleImagine.replace(extensie, '-full' + extensie);
+
+            // COMENTARIU DE CONTROL: Am eliminat if-urile de figmaEmbed și iframe-ul
+            container.innerHTML += `
+                <div class="project-card" style="padding: 0; overflow: hidden; background: #170030; border-radius: 20px; margin-bottom: 50px; display: flex; flex-direction: column;">
+        
+        <div class="project-info" style="padding: 40px; width: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 30px 0; font-weight: 900; font-size: 2.5rem; text-align: left;">
+                ${date.titlu}
+            </h3>
+            <p style="margin: 0 0 40px 0; opacity: 0.8; font-size: 1.1rem; line-height: 1.6; text-align: left; max-width: 100%;">
+                ${date.descriere}
+            </p>
+            
+            <button onclick="deschideProiect('${caleImagineLunga}', '${caleImagine}')" class="view-full-btn" style="
+                display: inline-block;
+                padding: 15px 30px;
+                background-color: #E086FF;
+                color: #170030;
+                text-decoration: none;
+                border-radius: 12px;
+                font-weight: 900;
+                font-family: inherit; /* Păstrează fontul paginii tale */
+                border: none;
+                cursor: pointer;
+                transition: 0.3s;
+            ">View Full Project ↗</button>
+        </div>
+
+        <div class="project-image-container" style="width: 100%; background: #0b001a; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: flex-start; justify-content: center; overflow: hidden;">
+            <img src="${caleImagine}" alt="Project Showcase" style="width: 100%; height: auto; display: block; object-fit: contain;" />
+        </div>
+    </div>
+`;
+        });
+    }, (error) => {
+        console.log("Eroare Firebase:", error);
+    });
+}
+
+    afiseazaProiecte();
+</script>
+
+</body>
+</html>

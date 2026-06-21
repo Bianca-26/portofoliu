@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>Admin</title>
+
+    <style id="anti-peek">
+        body { display: none !important; }
+    </style>
+
+    <script>
+        (function() {
+            const userCorect = "adminport"; 
+            const parolaCorecta = "modificare";
+
+            const userIntrodus = prompt("Sign in\nUser:");
+            const parolaIntrodusa = prompt("Password:");
+
+            if (userIntrodus === userCorect && parolaIntrodusa === parolaCorecta) {
+                // Pasul 2: Dacă e corect, ștergem stilul care ascunde pagina
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.getElementById("anti-peek").remove();
+                   
+                });
+            } else {
+                // parola gresita
+                alert("Acces nepermis.");
+                window.location.href = "index.html";
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+    <link href="" rel="stylesheet">
+</head>
+<body class="home-page">
+
+    <nav>
+        <div class="nav-links">
+            <a href="shdhgtybwgfso.html">Home</a>
+            <a href="index.html"><b>See changes</b></a>
+
+        </div>
+        <div class="nav-icon">
+            <a href="https://github.com/Bianca-26" class="GitHub-box">
+                <img src="images/GitHub.svg" alt="GitHub">
+            </a>
+        </div>
+    </nav>
+
+   <section class="container">
+
+         <div class="Waves">
+            <img src="images/waves.svg" alt="waves" class="bg-svg2">
+        </div>
+
+        <div class="admin-wrapper">
+            
+            <div class="admin-card">
+                <h2>Websites</h2>
+                <div class="form-group">
+                    <label>Title:</label>
+                    <input type="text" id="web-title" placeholder="Add a name to your project...">
+                </div>
+
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="web-desc" placeholder="Describe your design..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Cale Imagine din VS Code (ex: imagini/proiect1.png):</label>
+                    <input type="text" id="web-image-path" placeholder="Introdu folderul și numele pozei...">
+                </div>
+
+                <button class="update-btn" id="web-btn" onclick="trimiteDate()">Update</button>
+            </div>
+
+            <div class="admin-card">
+                <h2>Apps & Mobile</h2>
+                <div class="form-group">
+                    <label>Title:</label>
+                    <input type="text" id="app-title" placeholder="Add a name to your project...">
+                </div>
+
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="app-desc" placeholder="Describe your design..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Cale Imagine din VS Code (ex: imagini/app1.png):</label>
+                    <input type="text" id="app-image-path" placeholder="Introdu folderul și numele pozei...">
+                </div>
+
+                <button class="update-btn" id="app-btn" onclick="trimiteDateApps()">Update</button>
+            </div>
+            
+        </div>
+    </section>
+    <script src="config.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <script>
+
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // 4. Funcțiile tale de trimitere (Adăugat fallback-uri destul de deștepte pentru butoane)
+    async function trimiteDate() {
+        const btn = document.getElementById('web-btn');
+        try {
+            const titluIntrodus = document.getElementById('web-title').value;
+            const descriereIntrodusa = document.getElementById('web-desc').value;
+            // MODIFICAT AICI: Preluăm textul (calea string) direct din noua casetă text
+            const caleImagine = document.getElementById('web-image-path').value;
+
+            // MODIFICAT AICI: Verificăm dacă utilizatorul a introdus text în caseta de imagine
+            if (!titluIntrodus || !caleImagine) {
+                alert("Te rog adaugă un titlu și calea imaginii din VS Code!");
+                return;
+            }
+
+            if(btn) { btn.innerText = "Saving..."; btn.disabled = true; }
+
+            // MODIFICAT AICI: Trimitem direct textul căii în câmpul figmaLink din Firestore
+            await db.collection("proiecte").add({
+                titlu: titluIntrodus,
+                descriere: descriereIntrodusa,
+                figmaLink: caleImagine, 
+                categorie: "websites",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert("Proiect adăugat cu succes!");
+            
+            // MODIFICAT AICI: Resetăm noile inputuri text la valori goale
+            document.getElementById('web-title').value = "";
+            document.getElementById('web-desc').value = "";
+            document.getElementById('web-image-path').value = "";
+
+        } catch (error) {
+            console.error("Eroare la trimitere:", error);
+            alert("Eroare: " + error.message);
+        } finally {
+            if(btn) { btn.innerText = "Update"; btn.disabled = false; }
+        }
+    }
+
+    async function trimiteDateApps() {
+       const btn = document.getElementById('app-btn');
+        try {
+            const titluIntrodus = document.getElementById('app-title').value;
+            const descriereIntrodusa = document.getElementById('app-desc').value;
+            // MODIFICAT AICI: Preluăm textul căii pentru aplicații
+            const caleImagine = document.getElementById('app-image-path').value;
+
+            if (!titluIntrodus || !caleImagine) {
+                alert("Te rog adaugă un titlu și calea imaginii din VS Code!");
+                return;
+            }
+
+            if(btn) { btn.innerText = "Saving..."; btn.disabled = true; }
+
+            // MODIFICAT AICI: Salvăm string-ul căii în Firestore
+            await db.collection("proiecte").add({
+                titlu: titluIntrodus,
+                descriere: descriereIntrodusa,
+                figmaLink: caleImagine,
+                categorie: "apps",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert("Proiect adăugat cu succes!");
+            
+            // MODIFICAT AICI: Resetăm câmpurile de text pentru apps
+            document.getElementById('app-title').value = "";
+            document.getElementById('app-desc').value = "";
+            document.getElementById('app-image-path').value = "";
+
+        } catch (error) {
+            console.error("Eroare la trimitere:", error);
+            alert("Eroare: " + error.message);
+        } finally {
+            if(btn) { btn.innerText = "Update"; btn.disabled = false; }
+        }
+    }
+    </script>
+</body>
+</html>
